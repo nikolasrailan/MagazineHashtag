@@ -24,12 +24,21 @@ export function inicializarCarrinho(){
 
 
 
+function removerDoCarrinho(idProduto){
+  delete idsProdutoCarrinhoComQuantidade[idProduto];
+  renderizarProdutosCarrinho();
+}
+
 function incrementarQuantidadeProduto(idProduto){
   idsProdutoCarrinhoComQuantidade[idProduto]++;
   atualizarInformacaoQuantidade(idProduto);
 }
 
 function decrementarQuantidadeProduto(idProduto){
+  if(idsProdutoCarrinhoComQuantidade[idProduto] === 1){
+    removerDoCarrinho(idProduto);
+    return;
+  }
   idsProdutoCarrinhoComQuantidade[idProduto]--;
   atualizarInformacaoQuantidade(idProduto);
 }
@@ -39,13 +48,8 @@ function atualizarInformacaoQuantidade(idProduto){
 
 }
 
-export function adicionarAoCarrinho(idProduto){
-  if(idProduto in idsProdutoCarrinhoComQuantidade){
-    incrementarQuantidadeProduto(idProduto);
-    return;
-  }
+function desenharProdutoNoCarrinho(idProduto){
 
-  idsProdutoCarrinhoComQuantidade[idProduto] = 1;
   const produto = catalogo.find((p) => p.id === idProduto);
   const containerProdutosCarrinho = document.getElementById('produtos-carrinho');
 
@@ -61,7 +65,7 @@ export function adicionarAoCarrinho(idProduto){
     elementoArticle.classList.add(articleClass);
   }
 
-  const cartaoProdutoCarrinho = `<button id="fechar-carrinho" class="absolute top-0 right-1">
+  const cartaoProdutoCarrinho = `<button id="remover-item-${produto.id}" class="absolute top-0 right-1">
     <i class="fa-solid fa-circle-xmark text-slate-500 hover:text-slate-800"></i>
   </button>
   <img src="./assets/img/${produto.imagem}" class="h-24 rounded-lg" alt="Carrinho: ${produto.nome}">
@@ -82,4 +86,25 @@ export function adicionarAoCarrinho(idProduto){
   document.getElementById(`decrementar-produto-${produto.id}`).addEventListener('click', () => decrementarQuantidadeProduto(produto.id));
 
   document.getElementById(`incrementar-produto-${produto.id}`).addEventListener('click', () => incrementarQuantidadeProduto(produto.id));
+
+  document.getElementById(`remover-item-${produto.id}`).addEventListener('click', () => removerDoCarrinho(produto.id));
+}
+
+function renderizarProdutosCarrinho(){
+  const containerProdutosCarrinho = document.getElementById('produtos-carrinho');
+  containerProdutosCarrinho.innerHTML = '';
+  for(const idProduto in idsProdutoCarrinhoComQuantidade){
+    desenharProdutoNoCarrinho(idProduto);
+  }
+}
+
+export function adicionarAoCarrinho(idProduto){
+  if(idProduto in idsProdutoCarrinhoComQuantidade){
+    incrementarQuantidadeProduto(idProduto);
+    return;
+  }
+  idsProdutoCarrinhoComQuantidade[idProduto] = 1;
+  desenharProdutoNoCarrinho(idProduto);
+  
+
 }
